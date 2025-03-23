@@ -1,0 +1,183 @@
+<div class="space-y-6">
+  <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Dashboard</h1>
+
+  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div class="card">
+      <div class="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
+        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Daily Water Usage</h3>
+        <i class="material-icons text-gray-500 dark:text-gray-400">water_drop</i>
+      </div>
+      <div class="p-4 pt-0">
+        <div class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ vm.waterUsage.daily | number }} L
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          Total water distributed today
+        </p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
+        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Monthly Usage</h3>
+        <i class="material-icons text-gray-500 dark:text-gray-400">water_drop</i>
+      </div>
+      <div class="p-4 pt-0">
+        <div class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ vm.waterUsage.monthly | number }} L
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          Total water distributed this month
+        </p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
+        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Tank Level</h3>
+        <i class="material-icons text-gray-500 dark:text-gray-400">speed</i>
+      </div>
+      <div class="p-4 pt-0">
+        <div class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ vm.tankLevel.current }}%
+        </div>
+        <div class="progress-bar mt-2">
+          <div class="progress-bar-value" ng-style="{ width: vm.tankLevel.current + '%' }"></div>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          {{ vm.getTankLevelStatus() }}
+        </p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
+        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Water Quality</h3>
+        <i class="material-icons text-gray-500 dark:text-gray-400">analytics</i>
+      </div>
+      <div class="p-4 pt-0">
+        <div class="text-2xl font-bold text-gray-900 dark:text-white" 
+             ng-class="{'text-red-600 dark:text-red-400': vm.getPhStatus() !== 'Good'}">
+          {{ vm.getPhStatus() }}
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          pH: {{ vm.waterQuality.ph }} | TDS: {{ vm.waterQuality.tds }} ppm
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+    <div class="card col-span-4">
+      <div class="p-4">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Water Usage Analytics</h3>
+      </div>
+      <div class="p-4 pt-0">
+        <div class="flex space-x-2 mb-4">
+          <button 
+            ng-repeat="period in ['daily', 'weekly', 'monthly', 'yearly']"
+            ng-click="vm.setChartPeriod(period)"
+            class="px-3 py-1 text-sm rounded-md"
+            ng-class="{'bg-blue-600 text-white': vm.selectedPeriod === period, 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300': vm.selectedPeriod !== period}"
+          >
+            {{ period | capitalize }}
+          </button>
+        </div>
+        <div class="h-[300px]">
+          <water-usage-chart period="{{ vm.selectedPeriod }}"></water-usage-chart>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card col-span-3">
+      <div class="p-4">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Water Quality Parameters</h3>
+      </div>
+      <div class="p-4 pt-0">
+        <div class="space-y-4">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i class="material-icons text-blue-500">water_drop</i>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">pH Level</span>
+              </div>
+              <span
+                class="text-sm font-medium"
+                ng-class="{'text-red-500': vm.waterQuality.ph < 6.5 || vm.waterQuality.ph > 8.5, 'text-green-500': vm.waterQuality.ph >= 6.5 && vm.waterQuality.ph <= 8.5}"
+              >
+                {{ vm.waterQuality.ph }}
+              </span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar-value" ng-style="{ width: ((vm.waterQuality.ph - 0) / (14 - 0)) * 100 + '%' }"></div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Optimal range: 6.5 - 8.5
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i class="material-icons text-yellow-500">analytics</i>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Turbidity</span>
+              </div>
+              <span
+                class="text-sm font-medium"
+                ng-class="{'text-red-500': vm.waterQuality.turbidity > 5, 'text-green-500': vm.waterQuality.turbidity <= 5}"
+              >
+                {{ vm.waterQuality.turbidity }} NTU
+              </span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar-value" ng-style="{ width: Math.min((vm.waterQuality.turbidity / 10) * 100, 100) + '%' }"></div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Optimal range: &lt; 5 NTU
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i class="material-icons text-purple-500">speed</i>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">TDS</span>
+              </div>
+              <span
+                class="text-sm font-medium"
+                ng-class="{'text-red-500': vm.waterQuality.tds > 500, 'text-green-500': vm.waterQuality.tds <= 500}"
+              >
+                {{ vm.waterQuality.tds }} ppm
+              </span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar-value" ng-style="{ width: Math.min((vm.waterQuality.tds / 1000) * 100, 100) + '%' }"></div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Optimal range: &lt; 500 ppm
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i class="material-icons text-red-500">thermostat</i>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Temperature</span>
+              </div>
+              <span class="text-sm font-medium">
+                {{ vm.waterQuality.temperature }}°C
+              </span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar-value" ng-style="{ width: ((vm.waterQuality.temperature - 0) / (50 - 0)) * 100 + '%' }"></div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Optimal range: 10°C - 30°C
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
