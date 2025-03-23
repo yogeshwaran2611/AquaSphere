@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="waterAdminApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Distribution Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="styles/main.css" rel="stylesheet">
+</head>
+<body ng-controller="MainController as main" ng-cloak>
+  <div class="h-screen flex overflow-hidden bg-gray-100" ng-class="{'dark': main.isDarkMode}">
+    <!-- Sidebar for desktop -->
+    <div class="hidden md:flex md:flex-shrink-0" ng-if="main.isAuthenticated">
+      <div class="flex flex-col w-64">
+        <div class="flex flex-col h-0 flex-1 border-r border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800">
+          <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+            <div class="flex items-center flex-shrink-0 px-4">
+              <h1 class="text-xl font-bold">Water Admin</h1>
+            </div>
+            <nav class="mt-5 flex-1 px-2 bg-white dark:bg-gray-900 space-y-1">
+              <a ng-repeat="item in main.navItems" 
+                 ng-href="#!{{ item.href }}" 
+                 class="group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                 ng-class="{'bg-blue-600 text-white': main.isActive(item.href), 'text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800': !main.isActive(item.href)}">
+                <i class="material-icons mr-3 h-6 w-6" 
+                   ng-class="{'text-white': main.isActive(item.href), 'text-gray-400 group-hover:text-gray-500 dark:text-gray-400': !main.isActive(item.href)}">
+                  {{ item.icon }}
+                </i>
+                {{ item.name }}
+              </a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class="md:hidden fixed inset-0 z-40 flex" ng-if="main.mobileMenuOpen && main.isAuthenticated">
+      <div class="fixed inset-0 bg-gray-600 bg-opacity-75" ng-click="main.toggleMobileMenu()"></div>
+      <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-gray-900">
+        <div class="absolute top-0 right-0 -mr-12 pt-2">
+          <button type="button" class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" ng-click="main.toggleMobileMenu()">
+            <span class="sr-only">Close sidebar</span>
+            <i class="material-icons text-white">close</i>
+          </button>
+        </div>
+        <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+          <div class="flex-shrink-0 flex items-center px-4">
+            <h1 class="text-xl font-bold">Water Admin</h1>
+          </div>
+          <nav class="mt-5 px-2 space-y-1">
+            <a ng-repeat="item in main.navItems" 
+               ng-href="#!{{ item.href }}" 
+               class="group flex items-center px-2 py-2 text-base font-medium rounded-md"
+               ng-class="{'bg-blue-600 text-white': main.isActive(item.href), 'text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800': !main.isActive(item.href)}"
+               ng-click="main.toggleMobileMenu()">
+              <i class="material-icons mr-4 h-6 w-6" 
+                 ng-class="{'text-white': main.isActive(item.href), 'text-gray-400 group-hover:text-gray-500 dark:text-gray-400': !main.isActive(item.href)}">
+                {{ item.icon }}
+              </i>
+              {{ item.name }}
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col w-0 flex-1 overflow-hidden">
+      <div class="relative z-10 flex-shrink-0 flex h-16 bg-white dark:bg-gray-900 shadow" ng-if="main.isAuthenticated">
+        <button type="button" class="px-4 border-r border-gray-200 dark:border-gray-800 text-gray-500 md:hidden" ng-click="main.toggleMobileMenu()">
+          <span class="sr-only">Open sidebar</span>
+          <i class="material-icons">menu</i>
+        </button>
+        <div class="flex-1 px-4 flex justify-end">
+          <div class="ml-4 flex items-center md:ml-6 space-x-3">
+            <button class="bg-white dark:bg-gray-900 p-1 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200" ng-click="main.toggleDarkMode()">
+              <span class="sr-only">Toggle theme</span>
+              <i class="material-icons" ng-if="!main.isDarkMode">dark_mode</i>
+              <i class="material-icons" ng-if="main.isDarkMode">light_mode</i>
+            </button>
+
+            <div class="relative">
+              <button class="max-w-xs bg-white dark:bg-gray-900 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" ng-click="main.toggleUserMenu()">
+                <span class="sr-only">Open user menu</span>
+                <div class="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300">
+                  {{ main.user.email.charAt(0).toUpperCase() }}
+                </div>
+              </button>
+              
+              <div class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-900 ring-1 ring-black ring-opacity-5 focus:outline-none" ng-if="main.userMenuOpen">
+                <div class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800">
+                  {{ main.user.email }}
+                </div>
+                <a href="#!/profile" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" ng-click="main.toggleUserMenu()">Profile</a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" ng-click="main.logout()">Logout</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <main class="flex-1 relative overflow-y-auto focus:outline-none p-6 bg-gray-100 dark:bg-gray-800">
+        <div ng-view></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="fixed bottom-4 right-4 z-50" ng-if="main.toast.show">
+    <div class="max-w-sm w-full bg-white dark:bg-gray-900 shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden">
+      <div class="p-4">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <i class="material-icons text-green-500" ng-if="main.toast.type === 'success'">check_circle</i>
+            <i class="material-icons text-red-500" ng-if="main.toast.type === 'error'">error</i>
+          </div>
+          <div class="ml-3 w-0 flex-1 pt-0.5">
+            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ main.toast.title }}</p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ main.toast.message }}</p>
+          </div>
+          <div class="ml-4 flex-shrink-0 flex">
+            <button class="bg-white dark:bg-gray-900 rounded-md inline-flex text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" ng-click="main.hideToast()">
+              <span class="sr-only">Close</span>
+              <i class="material-icons">close</i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  
+  <!-- AngularJS -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+  
+  <!-- Application Scripts -->
+  <script src="app/app.module.js"></script>
+  <script src="app/app.config.js"></script>
+  <script src="app/services/firebase.service.js"></script>
+  <script src="app/services/auth.service.js"></script>
+  <script src="app/services/toast.service.js"></script>
+  <script src="app/controllers/main.controller.js"></script>
+  <script src="app/controllers/login.controller.js"></script>
+  <script src="app/controllers/forgot-password.controller.js"></script>
+  <script src="app/controllers/dashboard.controller.js"></script>
+  <script src="app/controllers/households.controller.js"></script>
+  <script src="app/controllers/household-details.controller.js"></script>
+  <script src="app/controllers/devices.controller.js"></script>
+  <script src="app/controllers/profile.controller.js"></script>
+  <script src="app/directives/water-usage-chart.directive.js"></script>
+</body>
+</html>
+
